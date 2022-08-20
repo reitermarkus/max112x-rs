@@ -1,0 +1,16 @@
+[package]
+name = "max112x"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+readme = "ReadMe.md"
+description = "Driver for the 24-bit MAX11214 and similar DACs."
+documentation = "https://docs.rs/max112x"
+repository = "https://github.com/reitermarkus/max112x-rs"
+homepage = "https://github.com/reitermarkus/max112x-rs"
+keywords = ["max11214", "dac"]
+categories = ["embedded", "hardware-support", "no-std"]
+
+[dependencies]
+embedded-hal = "0.2"
+bitflags = "1.0"
