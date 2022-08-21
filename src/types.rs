@@ -47,6 +47,7 @@ pub enum Format {
 }
 
 /// Clock source.
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ClockSource {
   /// Use external clock as the system clock.
   External,
@@ -55,6 +56,7 @@ pub enum ClockSource {
 }
 
 /// PGA gain.
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Pga {
   /// × 1
   X1,
@@ -75,6 +77,7 @@ pub enum Pga {
 }
 
 /// System status.
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Status {
   pub(crate) status: Stat,
 }
@@ -136,6 +139,7 @@ impl Status {
 }
 
 /// ADC state.
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum State {
   /// ADC is converting.
   Conversion,
@@ -146,6 +150,7 @@ pub enum State {
 }
 
 /// Calibration type.
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Calibration {
   /// Self-calibration.
   SelfCalibration,
