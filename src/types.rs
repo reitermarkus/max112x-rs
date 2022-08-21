@@ -88,7 +88,7 @@ impl Status {
   /// This is reset by reading the DATA register.
   ///
   /// This is duplicated by the RDYB pin.
-  pub const fn ready(&self) -> bool {
+  pub const fn data_ready(&self) -> bool {
     self.status.contains(Stat::RDY)
   }
 
