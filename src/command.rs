@@ -28,12 +28,20 @@ bitflags! {
 }
 
 impl Command {
-  const fn new() -> Self {
+  pub const fn new() -> Self {
     Self::START
   }
 
-  pub const fn conversion(rate: ConversionSpeed) -> Self {
+  pub const fn convert(rate: ConversionSpeed) -> Self {
     Self::new().union(Self::from_bits_truncate(rate as u8))
+  }
+
+  pub const fn calibrate() -> Self {
+    Self::new().union(Self::CAL)
+  }
+
+  pub const fn power_down() -> Self {
+    Self::new().union(Command::IMPD)
   }
 
   pub const fn register_write(reg: u8) -> Self {
