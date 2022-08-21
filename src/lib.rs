@@ -32,20 +32,22 @@ pub struct Max11214<SPI, MODE> {
   mode: PhantomData<MODE>,
 }
 
-impl<SPI, E, MODE> Max11214<SPI, MODE>
-where
-  SPI: Transfer<u8, Error = E>
-{
+impl<SPI> Max11214<SPI, Standby> {
   /// Create a new ADC with the given SPI peripheral.
-  pub fn new(spi: SPI) -> Max11214<SPI, Standby> {
-    Max11214 { spi, mode: PhantomData }
+  pub const fn new(spi: SPI) -> Self {
+    Self { spi, mode: PhantomData }
   }
 
   /// Release the contained SPI peripheral.
   pub fn release(self) -> SPI {
     self.spi
   }
+}
 
+impl<SPI, E, MODE> Max11214<SPI, MODE>
+where
+  SPI: Transfer<u8, Error = E>
+{
   /// Put the ADC into standby mode.
   pub fn into_standby(mut self) -> Result<Max11214<SPI, Standby>, Error<E>> {
     self.modify_reg_u8(|ctrl1: Ctrl1| {
