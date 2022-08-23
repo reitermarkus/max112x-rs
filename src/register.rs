@@ -1,3 +1,5 @@
+#![allow(clippy::unusual_byte_groupings)] // FIXME: https://github.com/rust-lang/rust-clippy/issues/9183
+
 use crate::ConversionSpeed;
 
 pub trait ReadReg<R>
