@@ -1,7 +1,7 @@
 use crate::register::Stat;
 
 /// Conversion speed (samples per second).
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ConversionSpeed {
   /// 0.95 with SINC filter, 25 with single-cycle conversion
   Rate0  = 0b0000,
@@ -38,7 +38,7 @@ pub enum ConversionSpeed {
 }
 
 /// Range format.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Format {
   /// Offset binary.
   OffsetBinary,
@@ -47,7 +47,7 @@ pub enum Format {
 }
 
 /// Clock source.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ClockSource {
   /// Use external clock as the system clock.
   External,
@@ -56,7 +56,7 @@ pub enum ClockSource {
 }
 
 /// PGA gain.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Pga {
   /// × 1
   X1,
@@ -77,7 +77,7 @@ pub enum Pga {
 }
 
 /// System status.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Status {
   pub(crate) status: Stat,
 }
@@ -139,7 +139,7 @@ impl Status {
 }
 
 /// ADC state.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum State {
   /// ADC is converting.
   Conversion,
@@ -150,7 +150,7 @@ pub enum State {
 }
 
 /// Calibration type.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Calibration {
   /// Self-calibration.
   SelfCalibration,
