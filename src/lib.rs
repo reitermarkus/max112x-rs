@@ -46,13 +46,11 @@ impl<SPI> Max11214<SPI, Standby> {
 
 impl<SPI, E, MODE> Max11214<SPI, MODE>
 where
-  SPI: Transfer<u8, Error = E>
+  SPI: Transfer<u8, Error = E>,
 {
   /// Put the ADC into standby mode.
   pub fn into_standby(mut self) -> Result<Max11214<SPI, Standby>, Error<E>> {
-    self.modify_reg_u8(|ctrl1: Ctrl1| {
-      ctrl1.union(Ctrl1::PD1).difference(Ctrl1::PD0)
-    })?;
+    self.modify_reg_u8(|ctrl1: Ctrl1| ctrl1.union(Ctrl1::PD1).difference(Ctrl1::PD0))?;
 
     self.write_cmd(Command::power_down())?;
     Ok(Max11214 { spi: self.spi, mode: PhantomData })
@@ -60,9 +58,7 @@ where
 
   /// Put the ADC into sleep mode.
   pub fn into_sleep(mut self) -> Result<Max11214<SPI, Sleep>, Error<E>> {
-    self.modify_reg_u8(|ctrl1: Ctrl1| {
-      ctrl1.difference(Ctrl1::PD1).union(Ctrl1::PD0)
-    })?;
+    self.modify_reg_u8(|ctrl1: Ctrl1| ctrl1.difference(Ctrl1::PD1).union(Ctrl1::PD0))?;
 
     self.write_cmd(Command::power_down())?;
     Ok(Max11214 { spi: self.spi, mode: PhantomData })
@@ -70,9 +66,7 @@ where
 
   /// Start conversion.
   pub fn start_conversion(mut self, rate: ConversionSpeed) -> Result<Max11214<SPI, Conversion>, Error<E>> {
-    self.modify_reg_u8(|ctrl1: Ctrl1| {
-      ctrl1.difference(Ctrl1::PD1).difference(Ctrl1::PD0)
-    })?;
+    self.modify_reg_u8(|ctrl1: Ctrl1| ctrl1.difference(Ctrl1::PD1).difference(Ctrl1::PD0))?;
 
     self.write_cmd(Command::convert(rate))?;
     Ok(Max11214 { spi: self.spi, mode: PhantomData })
@@ -108,25 +102,18 @@ where
   where
     R: WriteReg<u8>,
   {
-    let mut buf = [
-      Command::register_write(R::ADDR).bits(),
-      reg.to_reg(),
-    ];
+    let mut buf = [Command::register_write(R::ADDR).bits(), reg.to_reg()];
 
     self.spi.transfer(buf.as_mut()).map_err(|err| Error::Spi(err))?;
 
     Ok(R::from_reg(buf[1]))
   }
 
-
   fn read_reg_u8<R>(&mut self) -> Result<R, Error<E>>
   where
     R: ReadReg<u8>,
   {
-    let mut buf = [
-      Command::register_read(R::ADDR).bits(),
-      0,
-    ];
+    let mut buf = [Command::register_read(R::ADDR).bits(), 0];
 
     self.spi.transfer(buf.as_mut()).map_err(|err| Error::Spi(err))?;
 
@@ -137,11 +124,7 @@ where
   where
     R: ReadReg<u16>,
   {
-    let mut buf = [
-      Command::register_read(R::ADDR).bits(),
-      0,
-      0,
-    ];
+    let mut buf = [Command::register_read(R::ADDR).bits(), 0, 0];
 
     self.spi.transfer(buf.as_mut()).map_err(|err| Error::Spi(err))?;
 
@@ -152,12 +135,7 @@ where
   where
     R: ReadReg<u24>,
   {
-    let mut buf = [
-      Command::register_read(R::ADDR).bits(),
-      0,
-      0,
-      0,
-    ];
+    let mut buf = [Command::register_read(R::ADDR).bits(), 0, 0, 0];
 
     self.spi.transfer(buf.as_mut()).map_err(|err| Error::Spi(err))?;
 
@@ -169,13 +147,7 @@ where
   where
     R: ReadReg<u32>,
   {
-    let mut buf = [
-      Command::register_read(R::ADDR).bits(),
-      0,
-      0,
-      0,
-      0,
-    ];
+    let mut buf = [Command::register_read(R::ADDR).bits(), 0, 0, 0, 0];
 
     self.spi.transfer(buf.as_mut()).map_err(|err| Error::Spi(err))?;
 
@@ -183,10 +155,9 @@ where
   }
 }
 
-
 impl<SPI, E> Max11214<SPI, Conversion>
 where
-  SPI: Transfer<u8, Error = E>
+  SPI: Transfer<u8, Error = E>,
 {
   /// Read data.
   pub fn data(&mut self) -> Result<u32, Error<E>> {
@@ -199,21 +170,17 @@ macro_rules! impl_sleep_standby {
   () => {
     /// Set the system clock source.
     pub fn set_clock(&mut self, clock: ClockSource) -> Result<(), Error<E>> {
-      self.modify_reg_u8(|ctrl1: Ctrl1| {
-        match clock {
-          ClockSource::External => ctrl1.union(Ctrl1::EXTCK),
-          ClockSource::Internal => ctrl1.difference(Ctrl1::EXTCK),
-        }
+      self.modify_reg_u8(|ctrl1: Ctrl1| match clock {
+        ClockSource::External => ctrl1.union(Ctrl1::EXTCK),
+        ClockSource::Internal => ctrl1.difference(Ctrl1::EXTCK),
       })
     }
 
     /// Set the bipolar range format.
     pub fn set_format(&mut self, format: Format) -> Result<(), Error<E>> {
-      self.modify_reg_u8(|ctrl1: Ctrl1| {
-        match format {
-          Format::OffsetBinary => ctrl1.union(Ctrl1::FORMAT),
-          Format::TwosComplement => ctrl1.difference(Ctrl1::FORMAT),
-        }
+      self.modify_reg_u8(|ctrl1: Ctrl1| match format {
+        Format::OffsetBinary => ctrl1.union(Ctrl1::FORMAT),
+        Format::TwosComplement => ctrl1.difference(Ctrl1::FORMAT),
       })
     }
 
@@ -239,12 +206,10 @@ macro_rules! impl_sleep_standby {
 
     /// Run a self-calibration.
     pub fn self_calibrate<D: DelayMs<u32>>(&mut self, delay: &mut D, calibration: Calibration) -> Result<(), Error<E>> {
-      self.modify_reg_u8(|ctrl1: Ctrl5| {
-        match calibration {
-          Calibration::SelfCalibration => ctrl1.difference(Ctrl5::CAL),
-          Calibration::SystemOffsetCalibration => ctrl1.difference(Ctrl5::CAL1).union(Ctrl5::CAL0),
-          Calibration::SystemFullScaleCalibration => ctrl1.union(Ctrl5::CAL1).difference(Ctrl5::CAL0),
-        }
+      self.modify_reg_u8(|ctrl1: Ctrl5| match calibration {
+        Calibration::SelfCalibration => ctrl1.difference(Ctrl5::CAL),
+        Calibration::SystemOffsetCalibration => ctrl1.difference(Ctrl5::CAL1).union(Ctrl5::CAL0),
+        Calibration::SystemFullScaleCalibration => ctrl1.union(Ctrl5::CAL1).difference(Ctrl5::CAL0),
       })?;
 
       self.write_cmd(Command::calibrate())?;
@@ -280,19 +245,19 @@ macro_rules! impl_sleep_standby {
       let soc_adc = self.read_reg_u24::<ScgcAdc>()?;
       Ok(soc_adc.0.into())
     }
-  }
+  };
 }
 
 impl<SPI, E> Max11214<SPI, Sleep>
 where
-  SPI: Transfer<u8, Error = E>
+  SPI: Transfer<u8, Error = E>,
 {
   impl_sleep_standby!();
 }
 
 impl<SPI, E> Max11214<SPI, Standby>
 where
-  SPI: Transfer<u8, Error = E>
+  SPI: Transfer<u8, Error = E>,
 {
   impl_sleep_standby!();
 }

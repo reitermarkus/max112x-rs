@@ -2,5 +2,5 @@
 #[derive(Debug, Clone)]
 pub enum Error<SPI> {
   /// SPI error.
-  Spi(SPI)
+  Spi(SPI),
 }
