@@ -1,5 +1,41 @@
 use crate::register::Stat;
 
+#[allow(non_camel_case_types)]
+/// A 24-bit unsigned integer.
+pub struct u24([u8; 3]);
+
+impl u24 {
+  /// Create a native endian integer value from its representation as a byte array in big endian.
+  pub(crate) const fn from_be_bytes(bytes: [u8; 3]) -> Self {
+    Self(bytes)
+  }
+
+  /// Return the memory representation of this integer as a byte array in big-endian (network) byte order.
+  pub const fn to_be_bytes(&self) -> [u8; 3] {
+    self.0
+  }
+
+  /// Return the memory representation of this integer as a byte array in little-endian byte order.
+  pub const fn to_le_bytes(&self) -> [u8; 3] {
+    let [b0, b1, b2] = self.0;
+    [b2, b1, b0]
+  }
+}
+
+impl From<u24> for u32 {
+  fn from(n: u24) -> Self {
+    let [b2, b1, b0] = n.0;
+    Self::from_be_bytes([0, b2, b1, b0])
+  }
+}
+
+impl From<u24> for i32 {
+  fn from(n: u24) -> Self {
+    let [b2, b1, b0] = n.0;
+    Self::from_be_bytes([0, b2, b1, b0])
+  }
+}
+
 /// Conversion speed (samples per second).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ConversionSpeed {

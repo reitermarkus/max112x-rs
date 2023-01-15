@@ -1,6 +1,6 @@
 #![allow(clippy::unusual_byte_groupings)] // FIXME: https://github.com/rust-lang/rust-clippy/issues/9183
 
-use crate::ConversionSpeed;
+use crate::{types::u24, ConversionSpeed};
 
 pub trait ReadReg<R>
 where
@@ -70,29 +70,6 @@ macro_rules! register {
     register!(@impl_read_reg $Reg: $addr: $RegTy);
     register!(@impl_write_reg $Reg: $addr: $RegTy);
   };
-}
-
-#[allow(non_camel_case_types)]
-pub struct u24([u8; 3]);
-
-impl u24 {
-  pub const fn from_be_bytes(bytes: [u8; 3]) -> Self {
-    Self(bytes)
-  }
-}
-
-impl From<u24> for u32 {
-  fn from(n: u24) -> Self {
-    let [b2, b1, b0] = n.0;
-    Self::from_be_bytes([0, b2, b1, b0])
-  }
-}
-
-impl From<u24> for i32 {
-  fn from(n: u24) -> Self {
-    let [b2, b1, b0] = n.0;
-    Self::from_be_bytes([0, b2, b1, b0])
-  }
 }
 
 register! {
