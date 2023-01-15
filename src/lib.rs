@@ -161,7 +161,7 @@ where
 {
   /// Read data.
   pub fn data(&mut self) -> Result<u32, Error<E>> {
-    let soc_adc = self.read_reg_u24::<ScgcAdc>()?;
+    let soc_adc = self.read_reg_u24::<Data24>()?;
     Ok(soc_adc.0.into())
   }
 }
