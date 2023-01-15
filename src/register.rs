@@ -88,6 +88,13 @@ impl From<u24> for u32 {
   }
 }
 
+impl From<u24> for i32 {
+  fn from(n: u24) -> Self {
+    let [b2, b1, b0] = n.0;
+    Self::from_be_bytes([0, b2, b1, b0])
+  }
+}
+
 register! {
   /// STAT
   pub struct Stat: 0x0: u16 {
