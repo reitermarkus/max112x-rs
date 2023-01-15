@@ -136,31 +136,18 @@ impl Stat {
 }
 
 register! {
-  /// CTRL1
+  /// Control 1 Register (`CTRL1`)
   pub struct Ctrl1: 0x1: u8 {
-    /// External clock bit.
+    /// Continuous single-cycle bit.
     ///
-    /// - 0 Use internal oscillator as the system clock.
-    /// - 1 Use external clock as the system clock.
-    const EXTCK  = 0b10000000;
-    /// Synchronization bit.
+    /// - 0 A single conversion.
+    /// - 1 Continuous conversions.
+    const CONTSC = 0b00000001;
+    /// Single-cycle control bit.
     ///
-    /// - 0 Pulse synchronization mode.
-    /// - 1 Continuous synchronization mode.
-    const SYNC   = 0b01000000;
-    /// Power mode bits.
-    ///
-    /// - 00 Normal power-up state. This is the default state.
-    /// - 01 Sleep Mode—Powers down the subregulator and the entire digital circuitry. Upon resumption of power to the digital the PD[1:0] reverts to the default state of ‘00’.
-    /// - 10 Standby power—Powers down the analog blocks leaving the subregulator powered up.
-    /// - 11 Resets all registers to POR state leaving the subregulator powered. The PD[1:0] bits are reset to ‘00’. The operation of this state is identical to the RSTB pin.
-    const PD1    = 0b00100000;
-    const PD0    = 0b00010000;
-    /// U/B: Unipolar/bipolar bit.
-    ///
-    /// - 0 Bipolar input range (±VREF).
-    /// - 1 Unipolar input range (0 to VREF). S
-    const UB     = 0b00001000;
+    /// - 0 Continuous conversion mode.
+    /// - 1 Single-cycle mode. The MAX11214 completes one no-latency conversion and then powers down into a leakage-only state.
+    const SCYCLE = 0b00000010;
     /// Bipolar range format bit.
     ///
     /// When reading bipolar data:
@@ -169,21 +156,34 @@ register! {
     ///
     /// The data from unipolar range is always formatted in offset binary format.
     const FORMAT = 0b00000100;
-    /// Single-cycle control bit.
+    /// U/B: Unipolar/bipolar bit.
     ///
-    /// - 0 Continuous conversion mode.
-    /// - 1 Single-cycle mode. The MAX11214 completes one no-latency conversion and then powers down into a leakage-only state.
-    const SCYCLE = 0b00000010;
-    /// Continuous single-cycle bit.
+    /// - 0 Bipolar input range (±VREF).
+    /// - 1 Unipolar input range (0 to VREF). S
+    const UB     = 0b00001000;
+    /// Power mode bits.
     ///
-    /// - 0 A single conversion.
-    /// - 1 Continuous conversions.
-    const CONTSC = 0b00000001;
+    /// - 00 Normal power-up state. This is the default state.
+    /// - 01 Sleep Mode—Powers down the subregulator and the entire digital circuitry. Upon resumption of power to the digital the PD[1:0] reverts to the default state of ‘00’.
+    /// - 10 Standby power—Powers down the analog blocks leaving the subregulator powered up.
+    /// - 11 Resets all registers to POR state leaving the subregulator powered. The PD[1:0] bits are reset to ‘00’. The operation of this state is identical to the RSTB pin.
+    const PD0    = 0b00010000;
+    const PD1    = 0b00100000;
+    /// Synchronization bit.
+    ///
+    /// - 0 Pulse synchronization mode.
+    /// - 1 Continuous synchronization mode.
+    const SYNC   = 0b01000000;
+    /// External clock bit.
+    ///
+    /// - 0 Use internal oscillator as the system clock.
+    /// - 1 Use external clock as the system clock.
+    const EXTCK  = 0b10000000;
   }
 }
 
 register! {
-  /// CTRL2
+  /// Control 2 Register (`CTRL2`)
   pub struct Ctrl2: 0x2: u8 {
     const DGAIN1 = 0b10000000;
     const DGAIN0 = 0b01000000;
@@ -199,7 +199,7 @@ register! {
 }
 
 register! {
-  /// CTRL3
+  /// Control 3 Register (`CTRL3`)
   pub struct Ctrl3: 0x3: u8 {
     const ENMSYNC = 0b00100000;
     const MODBITS = 0b00010000;
@@ -211,7 +211,7 @@ register! {
 }
 
 register! {
-  /// CTRL4
+  /// Control 4 Register (`CTRL4`)
   pub struct Ctrl4: 0x4: u8 {
     const DIR3 = 0b01000000;
     const DIR2 = 0b00100000;
@@ -223,7 +223,7 @@ register! {
 }
 
 register! {
-  /// CTRL5
+  /// Control 5 Register (`CTRL5`)
   pub struct Ctrl5: 0x5: u8 {
     const CAL1   = 0b10000000;
     const CAL0   = 0b01000000;
@@ -237,56 +237,56 @@ register! {
 }
 
 register! {
-  /// 32-bit DATA
+  /// 32-bit Data Register (`DATA`)
   pub struct Data32(u32): 0x6;
 }
 
 register! {
-  /// 24-bit DATA
+  /// 24-bit Data Register (`DATA`)
   pub struct Data24(u24): 0x6;
 }
 
 register! {
-  /// SOC_SPI
+  /// SPI System Offset Calibration Register (`SOC_SPI`)
   pub struct SocSpi(u24): 0x7;
 }
 
 register! {
-  /// SGC_SPI
+  /// SPI System Gain Calibration Register (`SGC_SPI`)
   pub struct SgcSpi(u24): 0x8;
 }
 
 register! {
-  /// SCOC_SPI
+  /// SPI Self-Cal Offset Calibration Register (`SCOC_SPI`)
   pub struct ScocSpi(u24): 0x9;
 }
 
 register! {
-  /// SCGC_SPI
+  /// SPI Self-Cal Gain Calibration Register (`SCGC_SPI`)
   pub struct ScgcSpi(u24): 0xA;
 }
 
 register! {
-  /// HPF
+  /// Highpass Filter Register (`HPF`)
   pub struct Hpf(u16): 0xB;
 }
 
 register! {
-  /// SOC_ADC
+  /// ADC System Offset Calibration Register (`SOC_ADC`)
   pub struct SocAdc(u24): 0x15;
 }
 
 register! {
-  /// SGC_ADC
+  /// ADC System Gain Calibration Register (`SGC_ADC`)
   pub struct SgcAdc(u24): 0x16;
 }
 
 register! {
-  /// SCOC_ADC
+  /// ADC Self-Cal Offset Calibration Register (`SCOC_ADC`)
   pub struct ScocAdc(u24): 0x17;
 }
 
 register! {
-  /// SCGC_ADC
+  /// ADC Self-Cal Gain Calibration Register (`SCGC_ADC`)
   pub struct ScgcAdc(u24): 0x18;
 }
