@@ -65,8 +65,16 @@ where
   }
 
   /// Start conversion.
-  pub fn start_conversion(mut self, rate: ConversionSpeed) -> Result<Max11214<SPI, Conversion>, Error<E>> {
-    self.modify_reg_u8(|ctrl1: Ctrl1| ctrl1.difference(Ctrl1::PD1).difference(Ctrl1::PD0))?;
+  pub fn start_conversion(
+    mut self,
+    rate: ConversionSpeed,
+    continuous: bool,
+  ) -> Result<Max11214<SPI, Conversion>, Error<E>> {
+    self.modify_reg_u8(|mut ctrl1: Ctrl1| {
+      ctrl1.set(Ctrl1::SCYCLE, !continuous);
+
+      ctrl1.difference(Ctrl1::PD1).difference(Ctrl1::PD0)
+    })?;
 
     self.write_cmd(Command::convert(rate))?;
     Ok(Max11214 { spi: self.spi, mode: PhantomData })
