@@ -53,7 +53,7 @@ impl From<u24> for i32 {
 
 /// Conversion speed (samples per second).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ConversionSpeed {
+pub enum ConversionRate {
   /// 0.95 with SINC filter, 25 with single-cycle conversion
   Hz0_95  = 0b0000,
   /// 1.9 with SINC filter, 31.25 with single-cycle conversion
@@ -164,7 +164,7 @@ impl Status {
   /// calibration coefficient calculation.
   ///
   /// Note: This is always the rate of previous conversion and not the rate of the conversion in progress.
-  pub const fn data_rate(&self) -> ConversionSpeed {
+  pub const fn data_rate(&self) -> ConversionRate {
     self.status.rate()
   }
 

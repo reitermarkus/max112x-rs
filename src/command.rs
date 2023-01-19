@@ -1,6 +1,6 @@
 use bitflags::bitflags;
 
-use crate::ConversionSpeed;
+use crate::ConversionRate;
 
 bitflags! {
   pub struct Command: u8 {
@@ -32,7 +32,7 @@ impl Command {
     Self::START
   }
 
-  pub const fn convert(rate: ConversionSpeed) -> Self {
+  pub const fn convert(rate: ConversionRate) -> Self {
     Self::new().union(Self::from_bits_truncate(rate as u8))
   }
 

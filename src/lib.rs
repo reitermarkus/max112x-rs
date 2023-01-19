@@ -67,7 +67,7 @@ where
   /// Start conversion.
   pub fn start_conversion(
     mut self,
-    rate: ConversionSpeed,
+    rate: ConversionRate,
     continuous: bool,
   ) -> Result<Max11214<SPI, Conversion>, Error<E>> {
     self.modify_reg_u8(|mut ctrl1: Ctrl1| {

@@ -1,6 +1,6 @@
 #![allow(clippy::unusual_byte_groupings)] // FIXME: https://github.com/rust-lang/rust-clippy/issues/9183
 
-use crate::{types::u24, ConversionSpeed};
+use crate::{types::u24, ConversionRate};
 
 pub trait ReadReg<R>
 where
@@ -96,24 +96,24 @@ register! {
 }
 
 impl Stat {
-  pub const fn rate(self) -> ConversionSpeed {
+  pub const fn rate(self) -> ConversionRate {
     match self.intersection(Self::RATE).bits() >> 4 {
-      0b0000 => ConversionSpeed::Hz0_95,
-      0b0001 => ConversionSpeed::Hz1_9,
-      0b0010 => ConversionSpeed::Hz3_9,
-      0b0011 => ConversionSpeed::Hz7_8,
-      0b0100 => ConversionSpeed::Hz15_6,
-      0b0101 => ConversionSpeed::Hz31_25,
-      0b0110 => ConversionSpeed::Hz62_5,
-      0b0111 => ConversionSpeed::Hz125,
-      0b1000 => ConversionSpeed::Hz250,
-      0b1001 => ConversionSpeed::Hz500,
-      0b1010 => ConversionSpeed::Hz1000,
-      0b1011 => ConversionSpeed::Hz2000,
-      0b1100 => ConversionSpeed::Hz4000,
-      0b1101 => ConversionSpeed::Hz8000,
-      0b1110 => ConversionSpeed::Hz16000,
-      0b1111 => ConversionSpeed::Hz32000,
+      0b0000 => ConversionRate::Hz0_95,
+      0b0001 => ConversionRate::Hz1_9,
+      0b0010 => ConversionRate::Hz3_9,
+      0b0011 => ConversionRate::Hz7_8,
+      0b0100 => ConversionRate::Hz15_6,
+      0b0101 => ConversionRate::Hz31_25,
+      0b0110 => ConversionRate::Hz62_5,
+      0b0111 => ConversionRate::Hz125,
+      0b1000 => ConversionRate::Hz250,
+      0b1001 => ConversionRate::Hz500,
+      0b1010 => ConversionRate::Hz1000,
+      0b1011 => ConversionRate::Hz2000,
+      0b1100 => ConversionRate::Hz4000,
+      0b1101 => ConversionRate::Hz8000,
+      0b1110 => ConversionRate::Hz16000,
+      0b1111 => ConversionRate::Hz32000,
       _ => unreachable!(),
     }
   }
