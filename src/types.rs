@@ -1,8 +1,23 @@
+use core::fmt;
+
 use crate::register::Stat;
 
-#[allow(non_camel_case_types)]
 /// A 24-bit unsigned integer.
+#[allow(non_camel_case_types)]
+#[derive(Clone, Copy)]
 pub struct u24([u8; 3]);
+
+impl fmt::Display for u24 {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    u32::from(*self).fmt(f)
+  }
+}
+
+impl fmt::Debug for u24 {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    u32::from(*self).fmt(f)
+  }
+}
 
 impl u24 {
   /// Create a native endian integer value from its representation as a byte array in big endian.
