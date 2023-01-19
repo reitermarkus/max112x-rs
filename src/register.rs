@@ -98,22 +98,22 @@ register! {
 impl Stat {
   pub const fn rate(self) -> ConversionSpeed {
     match self.intersection(Self::RATE).bits() >> 4 {
-      0b0000 => ConversionSpeed::Rate0,
-      0b0001 => ConversionSpeed::Rate1,
-      0b0010 => ConversionSpeed::Rate2,
-      0b0011 => ConversionSpeed::Rate3,
-      0b0100 => ConversionSpeed::Rate4,
-      0b0101 => ConversionSpeed::Rate5,
-      0b0110 => ConversionSpeed::Rate6,
-      0b0111 => ConversionSpeed::Rate7,
-      0b1000 => ConversionSpeed::Rate8,
-      0b1001 => ConversionSpeed::Rate9,
-      0b1010 => ConversionSpeed::Rate10,
-      0b1011 => ConversionSpeed::Rate11,
-      0b1100 => ConversionSpeed::Rate12,
-      0b1101 => ConversionSpeed::Rate13,
-      0b1110 => ConversionSpeed::Rate14,
-      0b1111 => ConversionSpeed::Rate15,
+      0b0000 => ConversionSpeed::Hz0_95,
+      0b0001 => ConversionSpeed::Hz1_9,
+      0b0010 => ConversionSpeed::Hz3_9,
+      0b0011 => ConversionSpeed::Hz7_8,
+      0b0100 => ConversionSpeed::Hz15_6,
+      0b0101 => ConversionSpeed::Hz31_25,
+      0b0110 => ConversionSpeed::Hz62_5,
+      0b0111 => ConversionSpeed::Hz125,
+      0b1000 => ConversionSpeed::Hz250,
+      0b1001 => ConversionSpeed::Hz500,
+      0b1010 => ConversionSpeed::Hz1000,
+      0b1011 => ConversionSpeed::Hz2000,
+      0b1100 => ConversionSpeed::Hz4000,
+      0b1101 => ConversionSpeed::Hz8000,
+      0b1110 => ConversionSpeed::Hz16000,
+      0b1111 => ConversionSpeed::Hz32000,
       _ => unreachable!(),
     }
   }
@@ -147,10 +147,10 @@ register! {
     const UB     = 0b00001000;
     /// Power mode bits.
     ///
-    /// - 00 Normal power-up state. This is the default state.
-    /// - 01 Sleep Mode—Powers down the subregulator and the entire digital circuitry. Upon resumption of power to the digital the PD[1:0] reverts to the default state of ‘00’.
-    /// - 10 Standby power—Powers down the analog blocks leaving the subregulator powered up.
-    /// - 11 Resets all registers to POR state leaving the subregulator powered. The PD[1:0] bits are reset to ‘00’. The operation of this state is identical to the RSTB pin.
+    /// - 00 Normal power-up state: This is the default state.
+    /// - 01 Sleep mode: Powers down the subregulator and the entire digital circuitry. Upon resumption of power to the digital the PD[1:0] reverts to the default state of ‘00’.
+    /// - 10 Standby power: Powers down the analog blocks leaving the subregulator powered up.
+    /// - 11 Resets all registers to POR state leaving the subregulator powered. The `PD[1:0]` bits are reset to ‘00’. The operation of this state is identical to the RSTB pin.
     const PD0    = 0b00010000;
     const PD1    = 0b00100000;
     /// Synchronization bit.
@@ -171,13 +171,43 @@ register! {
   pub struct Ctrl2: 0x2: u8 {
     const DGAIN1 = 0b10000000;
     const DGAIN0 = 0b01000000;
+    /// Analog input buffer enable bit.
+    ///
+    /// - 0 Disable the analog input buffers.
+    /// - 1 Enable the analog input buffers.
     const BUFEN  = 0b00100000;
+    /// PGA Low Power mode bit.
+    ///
+    /// - 0 Standard power.
+    /// - 1 Low power.
     const LPMODE = 0b00010000;
+    /// PGA Enable bit.
+    ///
+    /// - 0 Disable the PGA.
+    /// - 1 Enable the PGA.
     const PGAEN  = 0b00001000;
     const PGAG2  = 0b00000100;
     const PGAG1  = 0b00000010;
     const PGAG0  = 0b00000001;
 
+    /// Modulator Digital Gain bits.
+    ///
+    /// - 00 x1
+    /// - 01 x2
+    /// - 10 x4
+    /// - 11 x8
+    const DGAIN = Self::DGAIN1.bits() | Self::DGAIN0.bits();
+
+    /// PGA Gain-Setting bits.
+    ///
+    /// - 000 x1
+    /// - 001 x2
+    /// - 010 x4
+    /// - 011 x8
+    /// - 100 x16
+    /// - 101 x32
+    /// - 110 x64
+    /// - 111 x128
     const PGAG = Self::PGAG2.bits() | Self::PGAG1.bits() | Self::PGAG0.bits();
   }
 }
