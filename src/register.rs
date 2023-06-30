@@ -38,7 +38,7 @@ macro_rules! register {
     $vis:vis struct $Reg:ident($RegTy:ty): $addr:literal;
   ) => {
     #[doc = concat!($name, " register (`", stringify!($addr), "`)")]
-    $vis struct $Reg(pub $RegTy);
+    $vis struct $Reg(pub(crate) $RegTy);
 
     impl $Reg {
       const fn from_bits_truncate(bits: $RegTy) -> Self {

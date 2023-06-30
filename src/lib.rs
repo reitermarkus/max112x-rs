@@ -168,9 +168,9 @@ where
   SPI: Transfer<u8, Error = E>,
 {
   /// Read data.
-  pub fn data(&mut self) -> Result<u24, Error<E>> {
+  pub fn data(&mut self) -> Result<u32, Error<E>> {
     let data = self.read_reg_u24::<Data24>()?;
-    Ok(data.0)
+    Ok(data.0.into())
   }
 }
 

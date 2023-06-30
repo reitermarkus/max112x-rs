@@ -5,7 +5,7 @@ use crate::register::Stat;
 /// A 24-bit unsigned integer.
 #[allow(non_camel_case_types)]
 #[derive(Clone, Copy)]
-pub struct u24([u8; 3]);
+pub(crate) struct u24([u8; 3]);
 
 impl fmt::Display for u24 {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
