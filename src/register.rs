@@ -59,6 +59,7 @@ macro_rules! register {
   ) => {
     ::bitflags::bitflags! {
       #[doc = concat!($name, " register (`", stringify!($addr), "`)")]
+      #[derive(Debug, Clone, Copy, PartialEq, Eq)]
       $vis struct $Reg: $RegTy {
         $(
           $(#[$inner $($args)*])*

@@ -14,7 +14,7 @@ bitflags! {
     const RATE2 = 0b00000100;
     const RATE1 = 0b00000010;
     const RATE0 = 0b00000001;
-    const RATE  = Self::RATE3.bits | Self::RATE2.bits | Self::RATE1.bits | Self::RATE0.bits;
+    const RATE  = Self::RATE3.bits() | Self::RATE2.bits() | Self::RATE1.bits() | Self::RATE0.bits();
 
     // Register Access Mode
     const RS4   = 0b00100000;
@@ -23,7 +23,7 @@ bitflags! {
     const RS1   = 0b00000100;
     const RS0   = 0b00000010;
     const RW    = 0b00000001;
-    const RS    = Self::RS4.bits | Self::RS3.bits | Self::RS2.bits | Self::RS1.bits | Self::RS0.bits;
+    const RS    = Self::RS4.bits() | Self::RS3.bits() | Self::RS2.bits() | Self::RS1.bits() | Self::RS0.bits();
   }
 }
 
