@@ -12,5 +12,5 @@ keywords = ["max11214", "adc"]
 categories = ["embedded", "hardware-support", "no-std"]
 
 [dependencies]
-embedded-hal = "0.2"
+embedded-hal = "1.0"
 bitflags = "2.4"
