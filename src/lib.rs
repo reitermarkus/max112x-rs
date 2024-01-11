@@ -1,12 +1,64 @@
-//! Driver for MAX11214 and similar 24-bit Delta-Sigma ADCs.
+//! Driver for MAX11214 and similar 24-bit Delta-Sigma ADCs implemented using platform-agnostic [`embedded-hal`](https://docs.rs/embedded-hal/latest/embedded_hal/) traits.
 //!
 //! Implemented according to <https://datasheets.maximintegrated.com/en/ds/MAX11214.pdf>.
-#![no_std]
-#![deny(missing_docs)]
+//! # Usage
+//!
+//! ```rust
+//! # fn main() -> Result<(), max112x::Error<embedded_hal::spi::ErrorKind>> {
+//! # use embedded_hal_mock::eh1::{spi::{Mock as SpiMock, Transaction as SpiTransaction}, delay::NoopDelay};
+//! # let spi = SpiMock::new(&[
+//! #   // Read status.
+//! #   SpiTransaction::transaction_start(),
+//! #   SpiTransaction::transfer_in_place(vec![0b11000001, 0, 0], vec![0b11000001, 0b00000100, 0b00000000]),
+//! #   SpiTransaction::transaction_end(),
+//! #
+//! #   // Switch to standby mode.
+//! #   SpiTransaction::transaction_start(),
+//! #   SpiTransaction::transfer_in_place(vec![0b11000011, 0], vec![0b11000011, 0b00010000]), // Read register.
+//! #   SpiTransaction::transaction_end(),
+//! #   SpiTransaction::transaction_start(),
+//! #   SpiTransaction::write_vec(vec![0b11000010, 0b00100000]), // Write register.
+//! #   SpiTransaction::transaction_end(),
+//! #   SpiTransaction::transaction_start(),
+//! #   SpiTransaction::write_vec(vec![0b10010000]), // Power down.
+//! #   SpiTransaction::transaction_end(),
+//! #
+//! #   // Read status.
+//! #   SpiTransaction::transaction_start(),
+//! #   SpiTransaction::transfer_in_place(vec![0b11000001, 0, 0], vec![0b11000001, 0b00001000, 0b00000000]),
+//! #   SpiTransaction::transaction_end(),
+//! # ]);
+//! # let mut delay = NoopDelay;
+//! use max112x::{Max11214, State};
+//!
+//! let mut adc = Max11214::new(spi);
+//!
+//! // Get status.
+//! let status = adc.status()?;
+//! assert_eq!(status.state(), State::PowerDown);
+//!
+//! // Switch to standby mode.
+//! let mut adc = adc.into_standby()?;
+//!
+//! // Get status.
+//! let status = adc.status()?;
+//! assert_eq!(status.state(), State::Standby);
+//!
+//! // Release the SPI peripheral again.
+//! let spi = adc.release();
+//! # let mut spi = spi;
+//! # spi.done();
+//! drop(spi);
+//! # Ok(())
+//! # }
+//! ```
+#![cfg_attr(not(test), no_std)]
+#![warn(missing_debug_implementations)]
+#![warn(missing_docs)]
 
 use core::marker::PhantomData;
 
-use embedded_hal::blocking::{delay::DelayMs, spi::Transfer};
+use embedded_hal::{delay::DelayNs, spi::SpiDevice};
 
 mod command;
 use command::Command;
@@ -17,16 +69,20 @@ use register::*;
 mod types;
 pub use types::*;
 
-/// Marks an ADC in conversion mode.
+/// Marker type for a [`Max11214`] in conversion mode.
+#[derive(Debug)]
 pub enum Conversion {}
 
-/// Marks an ADC in sleep mode.
+/// Marker type for a [`Max11214`] in sleep mode.
+#[derive(Debug)]
 pub enum Sleep {}
 
-/// Marks an ADC in standby mode.
+/// Marker type for a [`Max11214`] in standby mode.
+#[derive(Debug)]
 pub enum Standby {}
 
 /// A MAX11214 ADC.
+#[derive(Debug)]
 pub struct Max11214<SPI, MODE> {
   spi: SPI,
   mode: PhantomData<MODE>,
@@ -46,7 +102,7 @@ impl<SPI> Max11214<SPI, Standby> {
 
 impl<SPI, E, MODE> Max11214<SPI, MODE>
 where
-  SPI: Transfer<u8, Error = E>,
+  SPI: SpiDevice<u8, Error = E>,
 {
   /// Put the ADC into standby mode.
   pub fn into_standby(mut self) -> Result<Max11214<SPI, Standby>, Error<E>> {
@@ -87,8 +143,8 @@ where
   }
 
   fn write_cmd(&mut self, cmd: Command) -> Result<(), Error<E>> {
-    let mut cmd = [cmd.bits()];
-    self.spi.transfer(&mut cmd).map_err(|err| Error::Spi(err))?;
+    let cmd = [cmd.bits()];
+    self.spi.write(&cmd).map_err(|err| Error::Spi(err))?;
     Ok(())
   }
 
@@ -106,15 +162,12 @@ where
     Ok(())
   }
 
-  fn write_reg_u8<R>(&mut self, reg: R) -> Result<R, Error<E>>
+  fn write_reg_u8<R>(&mut self, reg: R) -> Result<(), Error<E>>
   where
     R: WriteReg<u8>,
   {
-    let mut buf = [Command::register_write(R::ADDR).bits(), reg.to_reg()];
-
-    self.spi.transfer(buf.as_mut()).map_err(|err| Error::Spi(err))?;
-
-    Ok(R::from_reg(buf[1]))
+    let buf = [Command::register_write(R::ADDR).bits(), reg.to_reg()];
+    self.spi.write(&buf).map_err(|err| Error::Spi(err))
   }
 
   fn read_reg_u8<R>(&mut self) -> Result<R, Error<E>>
@@ -123,7 +176,7 @@ where
   {
     let mut buf = [Command::register_read(R::ADDR).bits(), 0];
 
-    self.spi.transfer(buf.as_mut()).map_err(|err| Error::Spi(err))?;
+    self.spi.transfer_in_place(buf.as_mut()).map_err(|err| Error::Spi(err))?;
 
     Ok(R::from_reg(buf[1]))
   }
@@ -134,7 +187,7 @@ where
   {
     let mut buf = [Command::register_read(R::ADDR).bits(), 0, 0];
 
-    self.spi.transfer(buf.as_mut()).map_err(|err| Error::Spi(err))?;
+    self.spi.transfer_in_place(buf.as_mut()).map_err(|err| Error::Spi(err))?;
 
     Ok(R::from_reg(u16::from_be_bytes([buf[1], buf[2]])))
   }
@@ -145,7 +198,7 @@ where
   {
     let mut buf = [Command::register_read(R::ADDR).bits(), 0, 0, 0];
 
-    self.spi.transfer(buf.as_mut()).map_err(|err| Error::Spi(err))?;
+    self.spi.transfer_in_place(buf.as_mut()).map_err(|err| Error::Spi(err))?;
 
     Ok(R::from_reg(u24::from_be_bytes([buf[1], buf[2], buf[3]])))
   }
@@ -157,7 +210,7 @@ where
   {
     let mut buf = [Command::register_read(R::ADDR).bits(), 0, 0, 0, 0];
 
-    self.spi.transfer(buf.as_mut()).map_err(|err| Error::Spi(err))?;
+    self.spi.transfer_in_place(buf.as_mut()).map_err(|err| Error::Spi(err))?;
 
     Ok(R::from_reg(u32::from_be_bytes([buf[1], buf[2], buf[3], buf[4]])))
   }
@@ -165,7 +218,7 @@ where
 
 impl<SPI, E> Max11214<SPI, Conversion>
 where
-  SPI: Transfer<u8, Error = E>,
+  SPI: SpiDevice<u8, Error = E>,
 {
   /// Read data.
   pub fn data(&mut self) -> Result<u32, Error<E>> {
@@ -213,7 +266,7 @@ macro_rules! impl_sleep_standby {
     }
 
     /// Run a self-calibration.
-    pub fn self_calibrate<D: DelayMs<u32>>(&mut self, delay: &mut D, calibration: Calibration) -> Result<(), Error<E>> {
+    pub fn self_calibrate<D: DelayNs>(&mut self, delay: &mut D, calibration: Calibration) -> Result<(), Error<E>> {
       self.modify_reg_u8(|ctrl1: Ctrl5| match calibration {
         Calibration::SelfCalibration => ctrl1.difference(Ctrl5::CAL),
         Calibration::SystemOffsetCalibration => ctrl1.difference(Ctrl5::CAL1).union(Ctrl5::CAL0),
@@ -258,14 +311,14 @@ macro_rules! impl_sleep_standby {
 
 impl<SPI, E> Max11214<SPI, Sleep>
 where
-  SPI: Transfer<u8, Error = E>,
+  SPI: SpiDevice<u8, Error = E>,
 {
   impl_sleep_standby!();
 }
 
 impl<SPI, E> Max11214<SPI, Standby>
 where
-  SPI: Transfer<u8, Error = E>,
+  SPI: SpiDevice<u8, Error = E>,
 {
   impl_sleep_standby!();
 }
