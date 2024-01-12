@@ -5,7 +5,7 @@
 //!
 //! ```rust
 //! # fn main() -> Result<(), max112x::Error<embedded_hal::spi::ErrorKind>> {
-//! # use embedded_hal_mock::eh1::{spi::{Mock as SpiMock, Transaction as SpiTransaction}, delay::NoopDelay};
+//! # use embedded_hal_mock::eh1::{spi::{Mock as SpiMock, Transaction as SpiTransaction}};
 //! # let spi = SpiMock::new(&[
 //! #   // Read status.
 //! #   SpiTransaction::transaction_start(),
@@ -28,7 +28,6 @@
 //! #   SpiTransaction::transfer_in_place(vec![0b11000001, 0, 0], vec![0b11000001, 0b00001000, 0b00000000]),
 //! #   SpiTransaction::transaction_end(),
 //! # ]);
-//! # let mut delay = NoopDelay;
 //! use max112x::{Max11214, State};
 //!
 //! let mut adc = Max11214::new(spi);
@@ -58,7 +57,7 @@
 
 use core::marker::PhantomData;
 
-use embedded_hal::{delay::DelayNs, spi::SpiDevice};
+use embedded_hal::spi::{Operation, SpiDevice};
 
 mod command;
 use command::Command;
@@ -128,7 +127,6 @@ where
   ) -> Result<Max11214<SPI, Conversion>, Error<E>> {
     self.modify_reg_u8(|mut ctrl1: Ctrl1| {
       ctrl1.set(Ctrl1::SCYCLE, !continuous);
-
       ctrl1.difference(Ctrl1::PD1).difference(Ctrl1::PD0)
     })?;
 
@@ -266,19 +264,28 @@ macro_rules! impl_sleep_standby {
     }
 
     /// Run a self-calibration.
-    pub fn self_calibrate<D: DelayNs>(&mut self, delay: &mut D, calibration: Calibration) -> Result<(), Error<E>> {
+    pub fn self_calibrate(&mut self, calibration: Calibration) -> Result<(), Error<E>> {
+      let mut duration = 0;
+
       self.modify_reg_u8(|ctrl1: Ctrl5| match calibration {
-        Calibration::SelfCalibration => ctrl1.difference(Ctrl5::CAL),
-        Calibration::SystemOffsetCalibration => ctrl1.difference(Ctrl5::CAL1).union(Ctrl5::CAL0),
-        Calibration::SystemFullScaleCalibration => ctrl1.union(Ctrl5::CAL1).difference(Ctrl5::CAL0),
+        Calibration::SelfCalibration => {
+          duration = 200_000_000;
+          ctrl1.difference(Ctrl5::CAL)
+        },
+        Calibration::SystemOffsetCalibration => {
+          duration = 100_000_000;
+          ctrl1.difference(Ctrl5::CAL1).union(Ctrl5::CAL0)
+        },
+        Calibration::SystemFullScaleCalibration => {
+          duration = 100_000_000;
+          ctrl1.union(Ctrl5::CAL1).difference(Ctrl5::CAL0)
+        },
       })?;
 
-      self.write_cmd(Command::calibrate())?;
-
-      match calibration {
-        Calibration::SelfCalibration => delay.delay_ms(200),
-        _ => delay.delay_ms(100),
-      }
+      self
+        .spi
+        .transaction(&mut [Operation::Write(&[Command::calibrate().bits()]), Operation::DelayNs(duration)])
+        .map_err(|err| Error::Spi(err))?;
 
       Ok(())
     }

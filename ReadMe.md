@@ -9,5 +9,5 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-max112x = "0.6"
+max112x = "0.7"
 ```
