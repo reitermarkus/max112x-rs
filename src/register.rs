@@ -44,9 +44,14 @@ macro_rules! register {
       const fn from_bits_truncate(bits: $RegTy) -> Self {
         Self(bits)
       }
+
+      const fn bits(self) -> $RegTy {
+        self.0
+      }
     }
 
     register!(@impl_read_reg $Reg: $addr: $RegTy);
+    register!(@impl_write_reg $Reg: $addr: $RegTy);
   };
   (
     #[doc = $name:expr]
