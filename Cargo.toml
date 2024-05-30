@@ -16,4 +16,4 @@ embedded-hal = "1"
 bitflags = "2.4"
 
 [dev-dependencies]
-embedded-hal-mock = "0.10"
+embedded-hal-mock = "0.11"
